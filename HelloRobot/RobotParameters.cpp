@@ -1,10 +1,10 @@
 /*
- * RobotParameters.cpp
+ * ReadRobotParameters.cpp
  *
- *  Created on: July 26, 2016
- *      Authors: Yakir Kadkoda   	  203550546,
- *      		 Daniel Roitenberg    308154558,
- *      		 Avi Meltser   		  307929182
+ *  Created on: June 15, 2016
+ *      Authors: Bar   Miliavsky 205432099,
+ *      		 Mor   Tal       312496060,
+ *      		 Nadav Kaner     205785645
  */
 
 #include "RobotParameters.h"
@@ -13,191 +13,96 @@
 #include <iostream>
 #include <string.h>
 #include "math.h"
+#include <iostream>
+#include <fstream>
+#include <sstream>
 
 using namespace std;
-RobotParameters::RobotParameters(const char parameters[]) {
-	strcpy(_parameters, parameters);
+RobotParameters::RobotParameters(char* path)
+{
+	  string line;
+	  ifstream myfile(path);
+
+	  if (myfile.is_open())
+	  {
+	    while ( getline (myfile,line) )
+	    {
+			std::istringstream iss(line);
+
+	    	if (line.find("map:") != string::npos)
+	    	{
+				string mapHolder;
+				iss >> mapHolder >> this->map_path;
+			}
+	    	else if (line.find("startLocation:") != string::npos)
+			{
+				int a, b, c;
+				string mapHolder;
+				iss >> mapHolder >> a >> b >> c;
+				this->start.x = a;
+				this->start.y = b;
+				this->start.yaw = c;
+			}
+	    	else if (line.find("goal:") != string::npos)
+	    	{
+				int a, b;
+				string mapHolder;
+				iss >> mapHolder >> a >> b;
+				this->goal.x = a;
+				this->goal.y = b;
+				this->goal.yaw = 0;
+			}
+	    	else if (line.find("robotSize:") != string::npos)
+			{
+				int a, b;
+				string mapHolder;
+				iss >> mapHolder >> a >> b;
+				this->robot_size = max(a,b);
+			}
+	    	else if (line.find("GridResolutionCM:") != string::npos)
+			{
+				string mapHolder;
+				iss >> mapHolder >> grid_res;
+			}
+	    	else if (line.find("MapResolutionCM:") != string::npos)
+			{
+				string mapHolder;
+				iss >> mapHolder >> map_res;
+			}
+	    }
+	    myfile.close();
+	  }
+
+	  else cout << "File could not open";
+
+	// TODO Auto-generated constructor stub
 }
 
 Location RobotParameters::GetStartLocation(){
-	char* pointer = strstr(_parameters, "startLocation:");
-	bool onNumber = false;
 
-	int locationIndex = 0;
-	float location[3];
-
-	while(*pointer != '\n' && *pointer != '\0')
-	{
-		if((*pointer >= '0' && *pointer <= '9') || *pointer == '.'|| *pointer == '+'|| *pointer == '-')
-		{
-			if(! onNumber)
-			{
-				onNumber = true;
-				float coordinate = FindFloat(pointer);
-				location[locationIndex] = coordinate;
-				locationIndex++;
-			}
-		}
-		else
-		{
-			onNumber = false;
-		}
-		pointer ++;
-	}
-	Location locationStruct = Location();
-	locationStruct.x = location[0];
-	locationStruct.y = location[1];
-	locationStruct.yaw = location[2];
-
-	return locationStruct;
+	return this->start;
 }
 
 
-Location RobotParameters::GetGoalLocation(){
-	char* pointer = strstr(_parameters, "goal:");
-		bool onNumber = false;
-
-		int locationIndex = 0;
-		float location[2];
-
-		while(*pointer != '\n' && *pointer != '\0')
-		{
-			if((*pointer >= '0' && *pointer <= '9') || *pointer == '.'|| *pointer == '+'|| *pointer == '-')
-			{
-				if(! onNumber)
-				{
-					onNumber = true;
-					float coordinate = FindFloat(pointer);
-					location[locationIndex] = coordinate;
-					locationIndex++;
-				}
-			}
-			else
-			{
-				onNumber = false;
-			}
-			pointer ++;
-		}
-
-		Location locationStruct = Location();
-		locationStruct.x = location[0];
-		locationStruct.y = location[1];
-		locationStruct.yaw = 0;
-
-		return locationStruct;
+Location RobotParameters::GetGoalLocation()
+{
+	return this->goal;
 }
 
 const char* RobotParameters::GetMapPath(){
-	char* pointer = strstr(_parameters, "map:");
-	pointer += 4;// jump on the variable name
-	string mapPath = "";
-
-	while(*pointer == ' ') // trim
-	{
-		pointer++;
-	}
-
-	while(*pointer != '\0' && *pointer != '\n')
-	{
-		mapPath += *pointer;
-		pointer++;
-	}
-
-	return mapPath.c_str();
+	return this->map_path.c_str();
 }
 
 int RobotParameters::GetRobotSize(){
-	char* pointer = strstr(_parameters, "robotSize:");
-		bool onNumber = false;
-
-		int robotSizeIndex = 0;
-		int robotSize[2];
-
-		while(*pointer != '\n' && *pointer != '\0')
-		{
-			if((*pointer >= '0' && *pointer <= '9') || *pointer == '.'|| *pointer == '+'|| *pointer == '-')
-			{
-				if(! onNumber)
-				{
-					onNumber = true;
-					float size = FindFloat(pointer);
-					robotSize[robotSizeIndex] = (int)size;
-					robotSizeIndex++;
-				}
-			}
-			else
-			{
-				onNumber = false;
-			}
-			pointer ++;
-		}
-
-		return max(robotSize[0], robotSize[1]);
+	return this->robot_size;
 }
 
 float RobotParameters::GetMapResolution(){
-	const char* mapResolutionVariableName = "MapResolutionCM:";
-	char* pointer = strstr(_parameters, mapResolutionVariableName);
-	pointer += strlen(mapResolutionVariableName);// jump on the variable name
-	while(*pointer == ' ') // trim
-	{
-		pointer++;
-	}
-	float resolutionInCM = FindFloat(pointer);
-	return resolutionInCM;
+	return this->map_res;
 }
 
 float RobotParameters::GetGridResolution(){
-	const char* mapResolutionVariableName = "GridResolutionCM:";
-	char* pointer = strstr(_parameters, mapResolutionVariableName);
-	pointer += strlen(mapResolutionVariableName);// jump on the variable name
-	while(*pointer == ' ') // trim
-	{
-		pointer++;
-	}
-	float resolutionInCM = FindFloat(pointer);
-	return resolutionInCM;
-}
-
-float RobotParameters::FindFloat(char * pointer)
-{
-	bool foundDecDot = false;
-	int number = 0;
-	float decimalPart = 0;
-	int sign = 1;
-	while((*pointer >= '0' && *pointer <= '9') || *pointer == '.'|| *pointer == '+'|| *pointer == '-')
-	{
-		if(*pointer >= '0' && *pointer <= '9')
-		{
-			int currentDigit = *pointer - '0';
-			if(!foundDecDot)
-			{
-				number = number *10 + currentDigit;
-			}
-			else
-			{
-				decimalPart = decimalPart * 10 + currentDigit;
-			}
-		}
-		else if(*pointer == '.')// found the decimal dot indicator
-		{
-			foundDecDot = true;
-		}
-		else if(*pointer == '+')// set signd
-		{
-			sign = 1;
-		}
-		else if(*pointer == '-')// set sign
-		{
-			sign = -1;
-		}
-		pointer++;
-	}
-	while(decimalPart > 1)
-	{
-		decimalPart /= 10;
-	}
-	return (number + decimalPart) * sign;
+	return this->grid_res;
 }
 
 RobotParameters::~RobotParameters() {

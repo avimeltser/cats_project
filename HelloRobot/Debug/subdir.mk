@@ -5,45 +5,39 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 CPP_SRCS += \
 ../Grid.cpp \
-../Localization.cpp \
+../LocalizationManager.cpp \
 ../Map.cpp \
 ../Particle.cpp \
 ../PathPlanner.cpp \
-../ReadFileData.cpp \
-../ReadRobotParameters.cpp \
 ../Robot.cpp \
-../RobotLocationPrinter.cpp \
-../Scan.cpp \
+../RobotParameters.cpp \
+../SimulateScan.cpp \
 ../WaypointsManager.cpp \
 ../lodepng.cpp \
 ../main.cpp 
 
 OBJS += \
 ./Grid.o \
-./Localization.o \
+./LocalizationManager.o \
 ./Map.o \
 ./Particle.o \
 ./PathPlanner.o \
-./ReadFileData.o \
-./ReadRobotParameters.o \
 ./Robot.o \
-./RobotLocationPrinter.o \
-./Scan.o \
+./RobotParameters.o \
+./SimulateScan.o \
 ./WaypointsManager.o \
 ./lodepng.o \
 ./main.o 
 
 CPP_DEPS += \
 ./Grid.d \
-./Localization.d \
+./LocalizationManager.d \
 ./Map.d \
 ./Particle.d \
 ./PathPlanner.d \
-./ReadFileData.d \
-./ReadRobotParameters.d \
 ./Robot.d \
-./RobotLocationPrinter.d \
-./Scan.d \
+./RobotParameters.d \
+./SimulateScan.d \
 ./WaypointsManager.d \
 ./lodepng.d \
 ./main.d 

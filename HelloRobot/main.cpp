@@ -8,7 +8,6 @@
  */
 
 #include <libplayerc++/playerc++.h>
-#include "ReadFileData.h"
 #include "RobotParameters.h"
 #include "Robot.h"
 #include "Map.h"
@@ -21,36 +20,29 @@ using namespace PlayerCc;
 using namespace std;
 
 int main() {
-
 	// Initializing robot and it's parameters
-	const char* parametersString = ReadFileData().FromPath("Parameters");
-	RobotParameters robotPatameters = RobotParameters(parametersString);
+	RobotParameters robotPatameters("Parameters");
 
-	// Initial location
-	Location start = robotPatameters.GetStartLocation();
+	Map map = Map(robotPatameters.GetMapPath(),
+			robotPatameters.GetMapResolution(),
+			robotPatameters.GetGridResolution(),
+			robotPatameters.GetRobotSize() ,
+			robotPatameters.GetStartLocation(),
+			robotPatameters.GetGoalLocation());
 
-	// Goal location
-	Location dest = robotPatameters.GetGoalLocation();
 
-	// Initial map with robot parameters
-	string path = robotPatameters.GetMapPath();
-	float mapResolution = robotPatameters.GetMapResolution();
-	float gridResolution = robotPatameters.GetGridResolution();
-	int robotSize  = robotPatameters.GetRobotSize();
-	Map map = Map(robotPatameters.GetMapPath(), mapResolution, gridResolution, robotSize ,start, dest);
-
-	// Initial Grid
-	PathPlanner pathPlanner;
-	Grid grid = map.grid;
-	Robot robot("localhost", 6665, grid.GetGridWidth(), grid.GetGridHeight());
 	Location robotLocation ;
 	robotLocation.x = 2.175;
 	robotLocation.y = -2.875;
 	robotLocation.yaw = 0.785;
+
+	Grid grid = map.grid;
+	Robot robot("localhost", 6665, grid.GetGridWidth(), grid.GetGridHeight());
+
 	for (int i=0; i<20;i++)
 	{
-	robot.setFirstpPos(robotLocation.x, robotLocation.y, robotLocation.yaw);
-	robot.read();
+		robot.setFirstpPos(robotLocation.x, robotLocation.y, robotLocation.yaw);
+		robot.read();
 	}
 
 	// Load map
@@ -60,22 +52,23 @@ int main() {
 	map.LoadMapImage(robotPatameters.GetMapPath(), pixels,width, height);
 	LocalizationManager localization;
 	localization.RandomizeParticles(robotLocation);
-	vector<unsigned char> pixels2 = localization.GetParticlesPixels(pixels, width, height, robotPatameters.GetMapResolution(),robotLocation, robotLocation);
-	map.saveMapImage("particles/particelMapPng_ORIGIN",pixels2, width, height);
+
+	// Initial Grid
+	PathPlanner pathPlanner;
 
 	// Finding path using A* 
-	string route = pathPlanner.AStarPathFind(grid.GetGridStartLocation().y, grid.GetGridStartLocation().x,
-	grid.GetGridGoalLocation().y, grid.GetGridGoalLocation().x,
-	grid.GetGrid(),
-	grid.GetGridHeight(),
-	grid.GetGridWidth());
+	string route = pathPlanner.AStarPathFind(
+			grid.GetGridStartLocation().y, grid.GetGridStartLocation().x,
+			grid.GetGridGoalLocation().y, grid.GetGridGoalLocation().x,
+			grid.GetGrid(),grid.GetGridHeight(),
+			grid.GetGridWidth());
+
 	pathPlanner.PrintPath(grid, route);
+
 	Location* locations;
 	WayPointsManager waypointsManager;
 	int amountOfWaypoints = waypointsManager.createWaypoints(route, grid.GetGridStartLocation(), grid.GetGridGoalLocation(), locations);
 
-	// Saving map
-	map.saveMapImage("particles/particelMapPng_ORIGIN1",pixels, width, height);
 	SimulateScan scan = SimulateScan (pixels, width, height,robotPatameters.GetMapResolution(), robot.GetLaser());
 	Location previousLocation;
 
@@ -102,16 +95,11 @@ int main() {
 	previousLocation.x = currentLocation.x;
 	previousLocation.y = currentLocation.y;
 	// Debug!
-	vector<unsigned char> particelsPixels = localization.PrintParticlesOnPixels(pixels, width, height,
+	vector<unsigned char> particelsPixels = localization.GetParticlesPixels(pixels, width, height,
 	robotPatameters.GetMapResolution(), currentLocation, newLocation);
 
 	char str[100];
-	str[0] = '\0';
-	strcat(str,"particles/particelMapPng_");
-	char chr[2];
-	chr[1] = '\0';
-	chr[0] = 'a' + i;
-	strcat(str, chr);
+	snprintf(str,100, "particles/particelMapPng_%c", (i + 'a'));
 
 	// Saving the map image
 	map.saveMapImage(str, particelsPixels, width, height);
