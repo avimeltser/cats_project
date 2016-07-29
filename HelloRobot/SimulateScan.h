@@ -1,10 +1,10 @@
 /*
  * SimulateScan.h
  *
- *  Created on: June 15, 2016
- *      Authors: Bar   Miliavsky 205432099,
- *      		 Mor   Tal       312496060,
- *      		 Nadav Kaner     205785645
+ *  Created on: July 26, 2016
+ *      Authors: Yakir Kadkoda   	  203550546,
+ *      		 Daniel Roitenberg    308154558,
+ *      		 Avi Meltser   		  307929182
  */
 
 #ifndef SIMULATESCAN_H_
@@ -17,7 +17,7 @@
 using namespace PlayerCc;
 using namespace std;
 
-class Scan {
+class SimulateScan {
 private:
 	vector <unsigned char> _picture;
 	int _width;
@@ -27,10 +27,10 @@ private:
 	double LaserAngles[NUMBER_OF_RAYS];
 
 public:
-	Scan(vector <unsigned char> picture, int width, int height,double resolutionInCM, LaserProxy* laserProxy);
+	SimulateScan(vector <unsigned char> picture, int width, int height,double resolutionInCM, LaserProxy* laserProxy);
 	vector < double > Robot();
 	vector < double > Particle(Location location);
-	virtual ~Scan();
+	virtual ~SimulateScan();
 	bool HasBarrierIn(Location location);
 };
 

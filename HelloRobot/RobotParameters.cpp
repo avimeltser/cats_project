@@ -1,13 +1,13 @@
 /*
- * ReadRobotParameters.cpp
+ * RobotParameters.cpp
  *
- *  Created on: June 15, 2016
- *      Authors: Bar   Miliavsky 205432099,
- *      		 Mor   Tal       312496060,
- *      		 Nadav Kaner     205785645
+ *  Created on: July 26, 2016
+ *      Authors: Yakir Kadkoda   	  203550546,
+ *      		 Daniel Roitenberg    308154558,
+ *      		 Avi Meltser   		  307929182
  */
 
-#include "ReadRobotParameters.h"
+#include "RobotParameters.h"
 #include "stdlib.h"
 #include<stdio.h>
 #include <iostream>
@@ -15,12 +15,11 @@
 #include "math.h"
 
 using namespace std;
-GetRobotParameters::GetRobotParameters(const char parameters[]) {
-	// TODO Auto-generated constructor stub
+RobotParameters::RobotParameters(const char parameters[]) {
 	strcpy(_parameters, parameters);
 }
 
-Location GetRobotParameters::GetStartLocation(){
+Location RobotParameters::GetStartLocation(){
 	char* pointer = strstr(_parameters, "startLocation:");
 	bool onNumber = false;
 
@@ -54,7 +53,7 @@ Location GetRobotParameters::GetStartLocation(){
 }
 
 
-Location GetRobotParameters::GetGoalLocation(){
+Location RobotParameters::GetGoalLocation(){
 	char* pointer = strstr(_parameters, "goal:");
 		bool onNumber = false;
 
@@ -88,7 +87,7 @@ Location GetRobotParameters::GetGoalLocation(){
 		return locationStruct;
 }
 
-const char* GetRobotParameters::GetMapPath(){
+const char* RobotParameters::GetMapPath(){
 	char* pointer = strstr(_parameters, "map:");
 	pointer += 4;// jump on the variable name
 	string mapPath = "";
@@ -107,7 +106,7 @@ const char* GetRobotParameters::GetMapPath(){
 	return mapPath.c_str();
 }
 
-int GetRobotParameters::GetRobotSize(){
+int RobotParameters::GetRobotSize(){
 	char* pointer = strstr(_parameters, "robotSize:");
 		bool onNumber = false;
 
@@ -136,7 +135,7 @@ int GetRobotParameters::GetRobotSize(){
 		return max(robotSize[0], robotSize[1]);
 }
 
-float GetRobotParameters::GetMapResolution(){
+float RobotParameters::GetMapResolution(){
 	const char* mapResolutionVariableName = "MapResolutionCM:";
 	char* pointer = strstr(_parameters, mapResolutionVariableName);
 	pointer += strlen(mapResolutionVariableName);// jump on the variable name
@@ -148,7 +147,7 @@ float GetRobotParameters::GetMapResolution(){
 	return resolutionInCM;
 }
 
-float GetRobotParameters::GetGridResolution(){
+float RobotParameters::GetGridResolution(){
 	const char* mapResolutionVariableName = "GridResolutionCM:";
 	char* pointer = strstr(_parameters, mapResolutionVariableName);
 	pointer += strlen(mapResolutionVariableName);// jump on the variable name
@@ -160,7 +159,7 @@ float GetRobotParameters::GetGridResolution(){
 	return resolutionInCM;
 }
 
-float GetRobotParameters::FindFloat(char * pointer)
+float RobotParameters::FindFloat(char * pointer)
 {
 	bool foundDecDot = false;
 	int number = 0;
@@ -201,7 +200,7 @@ float GetRobotParameters::FindFloat(char * pointer)
 	return (number + decimalPart) * sign;
 }
 
-GetRobotParameters::~GetRobotParameters() {
+RobotParameters::~RobotParameters() {
 	// TODO Auto-generated destructor stub
 }
 

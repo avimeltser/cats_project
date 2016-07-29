@@ -1,10 +1,10 @@
 /*
  * Localization.cpp
  *
- *  Created on: June 15, 2016
- *      Authors: Bar   Miliavsky 205432099,
- *      		 Mor   Tal       312496060,
- *      		 Nadav Kaner     205785645
+ *  Created on: July 26, 2016
+ *      Authors: Yakir Kadkoda   	  203550546,
+ *      		 Daniel Roitenberg    308154558,
+ *      		 Avi Meltser   		  307929182
  */
 
 #include "Localization.h"
@@ -15,56 +15,59 @@
 #include <libplayerc++/playerc++.h>
 #include "Scan.h"
 
-#define NUMBER_OF_PARTICALES 1000
+#define PARTICLES_NUMBER 1000
 Localization::Localization() {
 	// TODO Auto-generated constructor stub
 	srand(time(NULL));
-	Particles.resize(NUMBER_OF_PARTICALES);
+	Particles.resize(PARTICLES_NUMBER);
 }
 
-void Localization::RandomizeParticles(Location originalLocation)
+void Localization::RandomizeParticles(Location location)
 {
-	for(int particleNumber = 0; particleNumber < NUMBER_OF_PARTICALES; particleNumber++)
+	for(int i = 0; i < PARTICLES_NUMBER; i++)
 	{
-		Location randomizedLocation = RandomizeLocation(originalLocation);
-		Particles[particleNumber] = Particle(randomizedLocation.x, randomizedLocation.y, randomizedLocation.yaw);
+		Location randomizedLocation = Randomize(location);
+		Particles[i] = Particle(randomizedLocation.x, randomizedLocation.y, randomizedLocation.yaw);
 	}
-	_currentLocation = originalLocation;
+	_currentLocation = location;
 }
 
-Location Localization::GetBestLocation(Scan scan, Location originLocation)
+Location Localization::GetBestLocation(Scan scan, Location original)
 {
 	if(IS_DEBUG)
 	{
-		return originLocation;
+		return original;
 	}
+	
 	vector <double > robotScan = scan.Robot();
 	Location maxBeliefLocation;
 	double maxBelief = 0;
-	for(int particleIndex =0; particleIndex < NUMBER_OF_PARTICALES; particleIndex++)
+	
+	for(int i =0; i < PARTICLES_NUMBER; i++)
 	{
-		Particle currentParticle = Particles[particleIndex];
-		Location particleLocation = currentParticle.GetLocation();
-		vector <double > particleScan = scan.Particle(particleLocation);
-		double belief = currentParticle.GetBelife(robotScan, particleScan, NUMBER_OF_RAYS);
+		Particle current = Particles[i];
+		Location location = current.GetLocation();
+		vector <double > particleScan = scan.Particle(location);
+		double belief = current.GetBelife(robotScan, particleScan, NUMBER_OF_RAYS);
 		if(belief >= maxBelief)
 		{
-			maxBeliefLocation = currentParticle.GetLocation();
+			maxBeliefLocation = current.GetLocation();
 			maxBelief = belief;
 		}
 	}
+	
 	return maxBeliefLocation;
 }
 
-void Localization::MoveParticles(double deltaDetination)
+void Localization::Move(double deltaDetination)
 {
-	for(int particleIndex =0; particleIndex < NUMBER_OF_PARTICALES; particleIndex++)
+	for(int i =0; i < PARTICLES_NUMBER; i++)
 	{
-		Particles[particleIndex].Move(deltaDetination);
+		Particles[i].MoveParticle(deltaDetination);
 	}
 }
 
-Location  Localization::RandomizeLocation(Location originalLocation)
+Location  Localization::Randomize(Location location)
 {
 	// between 0 - 100
 	int randomNamber = rand() % 100;
@@ -98,9 +101,9 @@ Location  Localization::RandomizeLocation(Location originalLocation)
 
 	randomPositionYaw = rand() % 10 - 5;
 	Location particleLocation;
-	particleLocation.x = originalLocation.x + randomDeltaX / 100;
-	particleLocation.y = originalLocation.y + randomDeltaY / 100;
-	particleLocation.yaw = originalLocation.yaw + DTOR(randomPositionYaw);
+	particleLocation.x = location.x + randomDeltaX / 100;
+	particleLocation.y = location.y + randomDeltaY / 100;
+	particleLocation.yaw = location.yaw + DTOR(randomPositionYaw);
 	return particleLocation;
 
 }
@@ -115,11 +118,11 @@ vector<unsigned char> Localization::PrintParticlesOnPixels(vector<unsigned char>
 		pictureCopy[pixelColor] = picture[pixelColor];
 	}
 
-	for(int particleNumber = 0; particleNumber < NUMBER_OF_PARTICALES; particleNumber++)
+	for(int i = 0; i < PARTICLES_NUMBER; i++)
 	{
-		Particle currentParticle = Particles[particleNumber];
-		double currentX = ((currentParticle.GetPosX() * 100) / resolutionInCM) + (double)width/2;
-		double currentY = height -(-(-(currentParticle.GetPosY() * 100) / resolutionInCM) + (double)height/2);
+		Particle current = Particles[i];
+		double currentX = ((current.GetPosX() * 100) / resolutionInCM) + (double)width/2;
+		double currentY = height -(-(-(current.GetPosY() * 100) / resolutionInCM) + (double)height/2);
 		int yoffset = width * 4 * round(currentY);
 		int xoffset = round(currentX) * 4;
 		int offset = yoffset + xoffset;

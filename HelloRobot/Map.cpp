@@ -1,10 +1,10 @@
 /*
  * Map.cpp
  *
- *  Created on: June 15, 2016
- *      Authors: Bar   Miliavsky 205432099,
- *      		 Mor   Tal       312496060,
- *      		 Nadav Kaner     205785645
+ *  Created on: July 26, 2016
+ *      Authors: Yakir Kadkoda   	  203550546,
+ *      		 Daniel Roitenberg    308154558,
+ *      		 Avi Meltser   		  307929182
  */
 
 #include "Map.h"
@@ -27,6 +27,7 @@ Map::Map(const char* mapFile, double mapResolution, double gridResolution,int ro
 
 	LoadMap(mapFile);
 	InflateObstacle();
+	
 	// For debug
 	saveMapImage("roboticLabMapInflated.png", pixels, width, height);
 	CreateGridFromMap();

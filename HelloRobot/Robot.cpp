@@ -1,10 +1,10 @@
 /*
  * robot.cpp
  *
- *  Created on: June 15, 2016
- *      Authors: Bar   Miliavsky 205432099,
- *      		 Mor   Tal       312496060,
- *      		 Nadav Kaner     205785645
+ *  Created on: July 26, 2016
+ *      Authors: Yakir Kadkoda   	  203550546,
+ *      		 Daniel Roitenberg    308154558,
+ *      		 Avi Meltser   		  307929182
  */
 
 #include "Robot.h"
@@ -16,36 +16,33 @@
 #define MOVE_SPEED 0.05
 
 Robot::Robot(char* ip, int port, int gridWidth, int gridHeight){
-	_pc = new PlayerCc::PlayerClient(ip,port);
+	_playerClient = new PlayerCc::PlayerClient(ip,port);
 
-	_pp = new PlayerCc::Position2dProxy(_pc);
-	_lp = new LaserProxy(_pc);
+	_playerProxy = new PlayerCc::Position2dProxy(_playerClient);
+	_laserProxy = new LaserProxy(_playerClient);
 
-	_pp->SetMotorEnable(true);
+	_playerProxy->SetMotorEnable(true);
 	// Sets default position
-	_pp->SetOdometry(2.175,-2.875,45);
-	_xDeltaFromVirtual = 0;
-	_yDeltaFromVirtual = 0;
-	_yawDeltaFromVirtual = 0;
+	_playerProxy->SetOdometry(2.175,-2.875,45);
+	_xDistanceFromVirtual = 0;
+	_yDistanceFromVirtual = 0;
+	_yawDistanceFromVirtual = 0;
 	this->gridWidth = gridWidth;
 	this->gridHeight = gridHeight;
-	for(int i = 0; i< 15; i++) _pc->Read();
+	for(int i = 0; i< 15; i++) _playerClient->Read();
 }
 
-void Robot::setFirstpPos(double x, double y, double yaw){
-	_pp->SetOdometry(x, y, yaw);
-}
-
-void Robot::MoveTo(Location destination){
+void Robot::MoveRobot(Location destination){
 	Location current = read();
-	double deltaX = destination.x - current.x;
-	double deltaY = destination.y - current.y;
-	double newYawInRad = atan2(deltaY, deltaX);
+	double distanceX = destination.x - current.x;
+	double distanceY = destination.y - current.y;
+	double newYawInRad = atan2(distanceY, distanceX);
 	double newYaw = rtod(newYawInRad);
 	if(newYaw < 0)
 	{
 		newYaw += 360;
 	}
+	
 	double currentYaw = current.yaw;
 	while(abs(newYaw - currentYaw) > 1)
 	{
@@ -53,43 +50,42 @@ void Robot::MoveTo(Location destination){
 		{
 			if(360 - currentYaw + newYaw < currentYaw - newYaw)
 			{
-				_pp -> SetSpeed(0, +ROTATE_SPEED);
+				_playerProxy -> SetSpeed(0, +ROTATE_SPEED);
 			}
 			else
 			{
-				_pp -> SetSpeed(0, -ROTATE_SPEED);
+				_playerProxy -> SetSpeed(0, -ROTATE_SPEED);
 			}
 		}
 		else
 		{
 			if(360 - newYaw + currentYaw < newYaw - currentYaw)
 			{
-				_pp -> SetSpeed(0, -ROTATE_SPEED);
+				_playerProxy -> SetSpeed(0, -ROTATE_SPEED);
 			}
 			else
 			{
-				_pp -> SetSpeed(0, +ROTATE_SPEED);
+				_playerProxy -> SetSpeed(0, +ROTATE_SPEED);
 			}
 		}
 		current = read();
 		currentYaw = current.yaw;
 	}
-	_pp -> SetSpeed(0, 0);
+	_playerProxy -> SetSpeed(0, 0);
 	current = read();
 
 	while(sqrt(pow(current.x - destination.x, 2) + pow(current.y - destination.y, 2)) > 2)
 	{
-		_pp -> SetSpeed(MOVE_SPEED,0);
+		_playerProxy -> SetSpeed(MOVE_SPEED,0);
 		current = read();
 	}
 
-	_pp -> SetSpeed(0, 0);
+	_playerProxy -> SetSpeed(0, 0);
 }
 
-// Methods
 Location Robot::read()
 {
-	_pc->Read();
+	_playerClient->Read();
 	double xx = getXPosition();
 	double yy = getYPosition();
 	double _yaw = getYaw();
@@ -109,44 +105,49 @@ Location Robot::read()
 
 void Robot::SetVirtualLocation(Location location)
 {
-	double x =_pp->GetXPos();
-	double y =_pp->GetYPos();
-	double yaw = _pp->GetYaw();
-	_xDeltaFromVirtual = location.x - x;
-	_yDeltaFromVirtual= location.y - y;
-	_yawDeltaFromVirtual = location.yaw - yaw;
+	double x =_playerProxy->GetXPos();
+	double y =_playerProxy->GetYPos();
+	double yaw = _playerProxy->GetYaw();
+	_xDistanceFromVirtual = location.x - x;
+	_yDistanceFromVirtual= location.y - y;
+	_yawDistanceFromVirtual = location.yaw - yaw;
 
 
 }
 
 LaserProxy* Robot::GetLaser()
 {
-	return _lp;
+	return _laserProxy;
 }
+
+void Robot::setFirstpPos(double x, double y, double yaw){
+	_playerProxy->SetOdometry(x, y, yaw);
+}
+
 
 double Robot::getXPosition()
 {
 	if(IS_DEBUG)
 	{
-		return _pp->GetXPos();
+		return _playerProxy->GetXPos();
 	}
-	return _pp->GetXPos() + _xDeltaFromVirtual;
+	return _playerProxy->GetXPos() + _xDistanceFromVirtual;
 }
 
 double Robot::getYPosition()
 {
 	if(IS_DEBUG)
 	{
-		return _pp->GetYPos();
+		return _playerProxy->GetYPos();
 	}
-	return _pp->GetYPos() + _yDeltaFromVirtual;
+	return _playerProxy->GetYPos() + _yDistanceFromVirtual;
 }
 
 double Robot::getYaw()
 {
 	if(IS_DEBUG)
 	{
-		return _pp->GetYaw();
+		return _playerProxy->GetYaw();
 	}
-	return _pp->GetYaw() + _yawDeltaFromVirtual;
+	return _playerProxy->GetYaw() + _yawDistanceFromVirtual;
 }

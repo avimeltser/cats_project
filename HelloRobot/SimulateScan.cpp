@@ -1,18 +1,18 @@
 /*
  * SimulateScan.cpp
  *
- *  Created on: June 15, 2016
- *      Authors: Bar   Miliavsky 205432099,
- *      		 Mor   Tal       312496060,
- *      		 Nadav Kaner     205785645
+ *  Created on: July 26, 2016
+ *      Authors: Yakir Kadkoda   	  203550546,
+ *      		 Daniel Roitenberg    308154558,
+ *      		 Avi Meltser   		  307929182
  */
 
-#include "Scan.h"
+#include "SimulateScan.h"
 #include "math.h"
 
 #define ANGLE_BETWEEN_RAYS 20
 using namespace std;
-Scan::Scan(vector <unsigned char> picture, int width, int height,double resolutionInCM, LaserProxy* laserProxy)
+SimulateScan::SimulateScan(vector <unsigned char> picture, int width, int height,double resolutionInCM, LaserProxy* laserProxy)
 {
 	_picture = picture;
 	_width = width;
@@ -32,7 +32,7 @@ Scan::Scan(vector <unsigned char> picture, int width, int height,double resoluti
 		scanCounter++;
 	}
 }
-vector<double > Scan::Robot()
+vector<double > SimulateScan::Robot()
 {
 	vector<double > scans;
 	scans.resize(NUMBER_OF_RAYS);
@@ -51,7 +51,7 @@ vector<double > Scan::Robot()
 	return scans;
 }
 
-vector<double > Scan::Particle(Location location)
+vector<double > SimulateScan::Particle(Location location)
 {
 	vector<double > scans2;
 	scans2.resize(NUMBER_OF_RAYS);
@@ -81,7 +81,7 @@ vector<double > Scan::Particle(Location location)
 	return scans2;
 }
 
-bool Scan::HasBarrierIn(Location location)
+bool SimulateScan::HasBarrierIn(Location location)
 {
 	double currentX = round(((location.x * 100) / _resolutionInCM) + (double)_width/2);
 	double currentY = round( _height -(-(-(location.y * 100) / _resolutionInCM) + (double)_height/2));
@@ -100,7 +100,7 @@ bool Scan::HasBarrierIn(Location location)
 	return false;
 }
 
-Scan::~Scan() {
+SimulateScan::~SimulateScan() {
 	// TODO Auto-generated destructor stub
 }
 

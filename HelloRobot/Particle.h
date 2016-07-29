@@ -1,10 +1,10 @@
 /*
  * Particle.h
  *
- *  Created on: June 15, 2016
- *      Authors: Bar   Miliavsky 205432099,
- *      		 Mor   Tal       312496060,
- *      		 Nadav Kaner     205785645
+ *  Created on: July 26, 2016
+ *      Authors: Yakir Kadkoda   	  203550546,
+ *      		 Daniel Roitenberg    308154558,
+ *      		 Avi Meltser   		  307929182
  */
 
 #ifndef PARTICLE_H_
@@ -18,12 +18,12 @@ using namespace std;
 class Particle {
 
 private:
-	double _posX, _posY, _yaw;
+	double _xPos, _yPos, _yaw;
 public:
 	Particle(double posX, double posY, double yaw);
 	Particle();
 	double GetBelife(vector <double > readings, vector <double > simulatedReadings, int readingsNumber);
-	void Move(double deltaDetination);
+	void MoveParticle(double deltaDetination);
 	double GetPosX();
 	double GetPosY();
 	double GetYaw();
