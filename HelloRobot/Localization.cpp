@@ -13,7 +13,7 @@
 #include "Globals.h"
 #include <stdlib.h>
 #include <libplayerc++/playerc++.h>
-#include "Scan.h"
+#include "SimulateScan.h"
 
 #define PARTICLES_NUMBER 1000
 Localization::Localization() {
@@ -32,7 +32,7 @@ void Localization::RandomizeParticles(Location location)
 	_currentLocation = location;
 }
 
-Location Localization::GetBestLocation(Scan scan, Location original)
+Location Localization::GetBestLocation(SimulateScan scan, Location original)
 {
 	if(IS_DEBUG)
 	{
