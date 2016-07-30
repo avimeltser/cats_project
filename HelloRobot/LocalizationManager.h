@@ -1,5 +1,5 @@
 /*
- * Localization.h
+ * LocalizationManager.h
  *
  *  Created on: July 26, 2016
  *      Authors: Yakir Kadkoda   	  203550546,
@@ -17,18 +17,18 @@
 
 using namespace std;
 
-class Localization {
+class LocalizationManager {
 private:
-	Location _currentLocation;
+	Location _location;
 	vector < Particle > Particles;
 public:
-	Localization();
+	LocalizationManager();
 	void RandomizeParticles(Location location);
-	Location Randomize(Location location);
-	Location GetBestLocation(SimulateScan scan, Location original);
+	vector<unsigned char> CopyPicture(vector<unsigned char> picture);
+	Location GetNextPrefferedLocation(SimulateScan scan, Location original);
 	void Move(double deltaDetination);
-	vector<unsigned char> PrintParticlesOnPixels(vector<unsigned char > picture,int width,int height,double resolutionInCM, Location current, Location chosen);
-	virtual ~Localization();
+	vector<unsigned char> GetParticlesPixels(vector<unsigned char > picture,int width,int height,double resolutionInCM, Location current, Location chosen);
+	virtual ~LocalizationManager();
 };
 
 #endif /* LOCALIZATION_H_ */

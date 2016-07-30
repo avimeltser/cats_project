@@ -15,7 +15,7 @@
 #include "Globals.h"
 #include "PathPlanner.h"
 #include "WaypointsManager.h"
-#include "Localization.h"
+#include "LocalizationManager.h"
 #include "stdlib.h"
 using namespace PlayerCc;
 using namespace std;
@@ -58,9 +58,9 @@ int main() {
 	unsigned width;
 	unsigned height;
 	map.LoadMapImage(robotPatameters.GetMapPath(), pixels,width, height);
-	Localization localization;
+	LocalizationManager localization;
 	localization.RandomizeParticles(robotLocation);
-	vector<unsigned char> pixels2 = localization.PrintParticlesOnPixels(pixels, width, height, robotPatameters.GetMapResolution(),robotLocation, robotLocation);
+	vector<unsigned char> pixels2 = localization.GetParticlesPixels(pixels, width, height, robotPatameters.GetMapResolution(),robotLocation, robotLocation);
 	map.saveMapImage("particles/particelMapPng_ORIGIN",pixels2, width, height);
 
 	// Finding path using A* 
@@ -97,7 +97,7 @@ int main() {
 	// moving particles by destinationDelta
 	localization.Move(deltaToDestionation);
 	// Get The location that has the highest accuracy on scans
-	Location newLocation = localization.GetBestLocation(scan, currentLocation);
+	Location newLocation = localization.GetNextPrefferedLocation(scan, currentLocation);
 
 	previousLocation.x = currentLocation.x;
 	previousLocation.y = currentLocation.y;

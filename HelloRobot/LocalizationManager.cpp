@@ -1,5 +1,5 @@
 /*
- * Localization.cpp
+ * LocalizationManager.cpp
  *
  *  Created on: July 26, 2016
  *      Authors: Yakir Kadkoda   	  203550546,
@@ -7,7 +7,7 @@
  *      		 Avi Meltser   		  307929182
  */
 
-#include "Localization.h"
+#include "LocalizationManager.h"
 #include "math.h"
 #include "Particle.h"
 #include "Globals.h"
@@ -16,24 +16,71 @@
 #include "SimulateScan.h"
 
 #define PARTICLES_NUMBER 1000
-Localization::Localization() {
-	// TODO Auto-generated constructor stub
+LocalizationManager::LocalizationManager() {
 	srand(time(NULL));
 	Particles.resize(PARTICLES_NUMBER);
 }
 
-void Localization::RandomizeParticles(Location location)
-{
+void LocalizationManager::RandomizeParticles(Location location){
 	for(int i = 0; i < PARTICLES_NUMBER; i++)
 	{
-		Location randomizedLocation = Randomize(location);
+		// randomize between 0 - 100
+		int randomNamber = rand() % 100;
+		double randomDeltaX = 0;
+		double randomDeltaY = 0;
+		double randomPositionYaw = 0;
+		
+		// randomize between 0 - 40 cms x y probability
+		if(randomNamber < 50)
+		{
+			randomDeltaX = rand() % 40 - 20;
+			randomDeltaY = rand() % 40 - 20;
+		}
+		// randomize between 0 - 60 cms x y probability
+		else if(randomNamber < 75)
+		{
+			randomDeltaX = rand() % 60 - 30;
+			randomDeltaY = rand() % 60 - 30;
+		}
+		// randomize between 0 - 70 cms x y probability
+		else if(randomNamber < 90)
+		{
+			randomDeltaX = rand() % 70 - 35;
+			randomDeltaY = rand() % 70 - 35;
+		}
+		// randomize between 0 - 80 cms x y probability
+		else
+		{
+			randomDeltaX = rand()%80 - 40;
+			randomDeltaY = rand()%80 - 40;
+		}
+
+		randomPositionYaw = rand() % 10 - 5;
+		
+		// final rnadom location
+		Location randomizedLocation;
+		randomizedLocation.x = location.x + randomDeltaX / 100;
+		randomizedLocation.y = location.y + randomDeltaY / 100;
+		randomizedLocation.yaw = location.yaw + DTOR(randomPositionYaw);
 		Particles[i] = Particle(randomizedLocation.x, randomizedLocation.y, randomizedLocation.yaw);
 	}
-	_currentLocation = location;
+	
+	_location = location;
 }
 
-Location Localization::GetBestLocation(SimulateScan scan, Location original)
-{
+vector<unsigned char> LocalizationManager::CopyPicture(vector<unsigned char> picture){
+	vector<unsigned char> pictureCopy;
+	int pictureSize = picture.size();
+	pictureCopy.resize(pictureSize);
+	for(int pixelColor =0 ; pixelColor < pictureSize; pixelColor++)
+	{
+		pictureCopy[pixelColor] = picture[pixelColor];
+	}
+	
+	return pictureCopy;
+}
+
+Location LocalizationManager::GetNextPrefferedLocation(SimulateScan scan, Location original){
 	if(IS_DEBUG)
 	{
 		return original;
@@ -59,65 +106,19 @@ Location Localization::GetBestLocation(SimulateScan scan, Location original)
 	return maxBeliefLocation;
 }
 
-void Localization::Move(double deltaDetination)
-{
+void LocalizationManager::Move(double deltaDetination){
 	for(int i =0; i < PARTICLES_NUMBER; i++)
 	{
 		Particles[i].MoveParticle(deltaDetination);
 	}
 }
 
-Location  Localization::Randomize(Location location)
-{
-	// between 0 - 100
-	int randomNamber = rand() % 100;
-	double randomDeltaX = 0;
-	double randomDeltaY = 0;
-	double randomPositionYaw = 0;
-	// 0 - 40 cms x y probability
-	if(randomNamber < 50)
-	{
-		randomDeltaX = rand() % 40 - 20;
-		randomDeltaY = rand() % 40 - 20;
-	}
-	// 0 - 60 cms x y probability
-	else if(randomNamber < 75)
-	{
-		randomDeltaX = rand() % 60 - 30;
-		randomDeltaY = rand() % 60 - 30;
-	}
-	// 0 - 70 cms x y probability
-	else if(randomNamber < 90)
-	{
-		randomDeltaX = rand() % 70 - 35;
-		randomDeltaY = rand() % 70 - 35;
-	}
-	// 0 - 80 cms x y probability
-	else
-	{
-		randomDeltaX = rand()%80 - 40;
-		randomDeltaY = rand()%80 - 40;
-	}
 
-	randomPositionYaw = rand() % 10 - 5;
-	Location particleLocation;
-	particleLocation.x = location.x + randomDeltaX / 100;
-	particleLocation.y = location.y + randomDeltaY / 100;
-	particleLocation.yaw = location.yaw + DTOR(randomPositionYaw);
-	return particleLocation;
-
-}
-
-vector<unsigned char> Localization::PrintParticlesOnPixels(vector<unsigned char> picture,int width,int height,double resolutionInCM, Location current, Location chosen)
-{
-	vector<unsigned char> pictureCopy;
-	int pictureSize = picture.size();
-	pictureCopy.resize(pictureSize);
-	for(int pixelColor =0 ; pixelColor < pictureSize; pixelColor++)
-	{
-		pictureCopy[pixelColor] = picture[pixelColor];
-	}
-
+vector<unsigned char> LocalizationManager::GetParticlesPixels(vector<unsigned char> picture,int width,int height,double resolutionInCM, Location current, Location chosen){
+	
+	// Creating a local copy of the picture
+	vector<unsigned char> pictureCopy = CopyPicture(picture);
+	
 	for(int i = 0; i < PARTICLES_NUMBER; i++)
 	{
 		Particle current = Particles[i];
@@ -141,8 +142,7 @@ vector<unsigned char> Localization::PrintParticlesOnPixels(vector<unsigned char>
 	pictureCopy[offset + 1] = 0;
 	pictureCopy[offset + 2] = 255;
 	pictureCopy[offset + 3] = 255;
-
-
+	
 	currentX = ((chosen.x * 100) / resolutionInCM) + (double)width/2;
 	currentY = height -(-(-(chosen.y * 100) / resolutionInCM) + (double)height/2);
 	yoffset = width * 4 * round(currentY);
@@ -155,7 +155,6 @@ vector<unsigned char> Localization::PrintParticlesOnPixels(vector<unsigned char>
 	return pictureCopy;
 }
 
-Localization::~Localization() {
-	// TODO Auto-generated destructor stub
+LocalizationManager::~LocalizationManager() {
 }
 
