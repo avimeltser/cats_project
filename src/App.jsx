@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 const highlights = [
   {
     title: "One checkout, one itinerary",
@@ -49,6 +51,50 @@ const coverage = [
 ];
 
 export default function App() {
+  const [formData, setFormData] = useState({
+    origin: "NYC",
+    destination: "Lisbon",
+    startDate: "2024-06-18",
+    endDate: "2024-06-29",
+    travelers: 2,
+    budget: 3200,
+    interests: "food,culture,coast"
+  });
+  const [quote, setQuote] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((current) => ({ ...current, [name]: value }));
+  };
+
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setIsLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch("/api/search", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData)
+      });
+
+      if (!response.ok) {
+        throw new Error("Unable to fetch itinerary. Please try again.");
+      }
+
+      const data = await response.json();
+      setQuote(data);
+    } catch (err) {
+      setError(err.message);
+      setQuote(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className="app">
       <header className="hero">
@@ -128,6 +174,119 @@ export default function App() {
           </div>
         </div>
       </header>
+
+      <section className="section" id="live">
+        <div className="section-header">
+          <h2>Live trip orchestration demo.</h2>
+          <p>
+            Submit a quick request and the Tripwise API returns a complete itinerary, pricing, and provider
+            mix. Replace mocked providers with live integrations when you are ready.
+          </p>
+        </div>
+        <div className="live-demo">
+          <form className="planner-form" onSubmit={handleSubmit}>
+            <div className="input-grid">
+              <label>
+                Origin
+                <input name="origin" value={formData.origin} onChange={handleChange} />
+              </label>
+              <label>
+                Destination
+                <input name="destination" value={formData.destination} onChange={handleChange} />
+              </label>
+              <label>
+                Start date
+                <input name="startDate" type="date" value={formData.startDate} onChange={handleChange} />
+              </label>
+              <label>
+                End date
+                <input name="endDate" type="date" value={formData.endDate} onChange={handleChange} />
+              </label>
+              <label>
+                Travelers
+                <input
+                  name="travelers"
+                  type="number"
+                  min="1"
+                  value={formData.travelers}
+                  onChange={handleChange}
+                />
+              </label>
+              <label>
+                Budget (USD)
+                <input name="budget" type="number" value={formData.budget} onChange={handleChange} />
+              </label>
+              <label className="full">
+                Interests
+                <input name="interests" value={formData.interests} onChange={handleChange} />
+              </label>
+            </div>
+            <button className="primary-button" type="submit" disabled={isLoading}>
+              {isLoading ? "Building itinerary..." : "Build live itinerary"}
+            </button>
+            {error ? <p className="error">{error}</p> : null}
+          </form>
+
+          <div className="quote-panel">
+            {quote ? (
+              <>
+                <div className="quote-header">
+                  <div>
+                    <p className="eyebrow">Request ID</p>
+                    <h3>{quote.requestId}</h3>
+                  </div>
+                  <span className="status">{quote.currency}</span>
+                </div>
+                <div className="quote-grid">
+                  <div className="quote-card">
+                    <h4>Flights</h4>
+                    <p>{quote.itinerary.flights[0].segment}</p>
+                    <strong>${quote.itinerary.flights[0].total}</strong>
+                  </div>
+                  <div className="quote-card">
+                    <h4>Stays</h4>
+                    <p>{quote.itinerary.stays[0].name}</p>
+                    <strong>${quote.itinerary.stays[0].total}</strong>
+                  </div>
+                  <div className="quote-card">
+                    <h4>Transport</h4>
+                    <p>{quote.itinerary.transport[0].mode}</p>
+                    <strong>${quote.itinerary.transport[0].total}</strong>
+                  </div>
+                  <div className="quote-card">
+                    <h4>Activities</h4>
+                    <p>{quote.itinerary.activities[0].name}</p>
+                    <strong>${quote.itinerary.activities[0].total}</strong>
+                  </div>
+                </div>
+                <div className="quote-footer">
+                  <div>
+                    <p>Total estimate</p>
+                    <strong>${quote.totals.total}</strong>
+                  </div>
+                  <div className="provider-list">
+                    {quote.providers.map((provider) => (
+                      <span key={provider.type}>
+                        {provider.name} · {provider.type}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                <ul className="quote-notes">
+                  {quote.notes.map((note) => (
+                    <li key={note}>{note}</li>
+                  ))}
+                </ul>
+              </>
+            ) : (
+              <div className="quote-empty">
+                <h3>No itinerary yet</h3>
+                <p>Submit the form to pull a live itinerary from the Tripwise API.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
 
       <section className="section" id="how">
         <div className="section-header">
