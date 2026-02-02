@@ -4,22 +4,31 @@
   "version": "0.1.0",
   "type": "module",
   "scripts": {
-    "dev": "concurrently -n client,server -c blue,green \"vite\" \"node server/index.js\"",
+    "dev": "concurrently -n client,server -c blue,green \"vite\" \"nodemon --watch server --watch .env --ext js,json --exec node server/index.js\"",
     "dev:client": "vite",
     "dev:server": "node server/index.js",
+    "start": "NODE_ENV=production node server/index.js",
+    "ci": "npm run build",
     "build": "vite build",
     "preview": "vite preview"
   },
   "dependencies": {
+    "compression": "^1.8.1",
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "pino": "^10.3.0",
+    "pino-http": "^11.0.0",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-dom": "^18.2.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.0",
     "concurrently": "^8.2.2",
+    "nodemon": "^3.1.11",
     "vite": "^5.0.0"
   }
 }
